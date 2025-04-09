@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  fhir:
+    image: hapiproject/hapi:latest
+    container_name: mock
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./fhir-data:/data/hapi
+    environment:
+      HAPI_FHIR_SERVER_ADDRESS: 'http://localhost:8080/fhir'
+      SPRING_DATASOURCE_URL: 'jdbc:h2:file:/data/hapi/h2'
