@@ -1,0 +1,2 @@
+id,status,effectiveDateTime,code_text,code_coding_0_code,code_coding_0_display,valueQuantity_value,valueQuantity_unit,subject_reference,subject_display
+obs-002,final,2024-04-10T10:00:00Z,Body temperature,8310-5,Body temperature,38.5,°C,Patient/patient-002,Hanako Suzuki

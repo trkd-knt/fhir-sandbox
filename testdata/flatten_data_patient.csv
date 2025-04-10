@@ -1,0 +1,2 @@
+id,active,name_0_use,name_0_family,name_0_given_0,name_0_given_1,gender,birthDate,telecom_0_system,telecom_0_value,telecom_0_use,address_0_line_0,address_0_city,address_0_country
+patient-002,true,official,Suzuki,Hanako,,female,1985-05-15,phone,080-5678-1234,mobile,4-5-6 Marunouchi,Osaka,JP

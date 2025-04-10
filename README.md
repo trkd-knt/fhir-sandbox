@@ -1,35 +1,81 @@
-# fhir-sandbox
+# FHIR CSV <-> JSON 変換 CLI
 
-## スキーマの参照元
+このツールは、FHIRのPatient / ObservationリソースをCSVとFHIR Bundle形式のJSON間で相互変換できるCLIです。FHIR非対応のツールなどとのデータ連携を目的としています。
 
-```
-https://hl7.org/fhir/R4/patient.html
+## 🔧 実行方法
+
+```bash
+go run main.go [COMMAND] [...flags]
 ```
 
-## 起動
+## 🧪 サンプルデータでの実行例
+
+### JSON → CSV 変換
+```bash
+go run main.go patient --to-csv --input testdata/fhir_bundle_patient.json  --output outputs/values_patient.csv
+go run main.go observation --to-csv --input testdata/fhir_bundle_observation.json --output  outputs/values_observation.csv
 ```
-cp .env.sample .env
-docker-compose up --build
+
+### CSV → JSON 変換
+```bash
+go run main.go patient --to-json --input testdata/flatten_data_patient.csv --output outputs/bundle_patient.json
+go run main.go observation --to-json --input testdata/flatten_data_observation.csv --output outputs/bundle_observation.json
+```
+
+## 🩺 FHIR-mockと連携して動作確認
+
+### FHIR Mock サーバの起動
+```bash
+docker-compose up -d
+```
+
+### データ登録
+```bash
+curl -X POST http://localhost:8080/fhir \
+  -H "Content-Type: application/fhir+json" \
+  -d @outputs/bundle_patient.json
 
 curl -X POST http://localhost:8080/fhir \
--H "Content-Type: application/fhir+json" \
--d @migrations/transaction-bundle.json
+  -H "Content-Type: application/fhir+json" \
+  -d @outputs/bundle_observation.json
 ```
 
-## 動作確認
-### fhir-mock
-```
+### 登録内容確認
+```bash
 curl -X GET http://localhost:8080/fhir/Patient
+curl -X GET http://localhost:8080/fhir/Observation
 ```
 
-### データ出力
-```
-* Patients
-npx ts-node src/interfaces/cli/export-patients.ts
+### FHIR-mockから再エクスポート
+```bash
+curl -X GET http://localhost:8080/fhir/Patient \
+  -H "Accept: application/fhir+json" \
+  -o inputs/patients.json
 
-% cat outputs/patients-20250409.csv 
-ID,Identifier,Active,Name,Gender,Birth Date,Deceased,Address,Phone,Email,Marital Status,Multiple Birth,Languages,Contact Name,Contact Phone,Managing Organization,General Practitioner
-patient-001,001,true,Yamada Taro,male,1990-01-01,false,"1-1 Shibuya Building 1 Tokyo, Tokyo, 150-0001, Japan",090-1234-5678,taro.yamada@example.com,Married,false,English,Yamada Ichiro,090-8765-4321,Organization/8,Practitioner/9
-patient-002,002,true,Suzuki Hanako,female,1985-05-15,false,"3-3 Shibuya Building 2 Tokyo, Tokyo, 150-0003, Japan",090-2345-6789,hanako.suzuki@example.com,Single,false,Japanese,Suzuki Yukiko,090-1234-9876,Organization/8,Practitioner/9
-% 
+curl -X GET http://localhost:8080/fhir/Observation \
+  -H "Accept: application/fhir+json" \
+  -o inputs/observation.json
+```
+
+### 再取得データをCSVに変換
+```bash
+go run main.go patient --to-csv --input inputs/patients.json  --output outputs/values_patient_2.csv
+go run main.go observation --to-csv --input inputs/observation.json --output  outputs/values_observation_2.csv
+```
+
+## 💡 対応リソース
+- [x] Patient
+- [x] Observation
+- [ ] その他リソース
+
+## 🗂 ディレクトリ構成（簡略）
+
+```bash
+.
+├── cmd/                # Cobra CLI 各コマンド
+├── domain/             # FHIRモデル構造体定義
+├── infrastructure/     # ファイル入出力(JSON/CSV)
+├── usecase/            # 変換ロジック（flatten/expand）
+├── testdata/           # 入出力サンプル
+└── main.go             # エントリーポイント
 ```
